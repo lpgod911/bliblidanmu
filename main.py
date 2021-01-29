@@ -18,7 +18,7 @@ import time
 import nest_asyncio
 import stop_thread
 from tts import play_tts
-from giftconfig import gift,Giftdict1,Giftdict2
+from giftconfig import gift
 
 
 roomid = '22616007'#22616007
