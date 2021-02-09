@@ -1,0 +1,1 @@
+pyinstaller -D --distpath f:\danmucode\dist f:\danmucode\danmu.py
