@@ -21,7 +21,7 @@ from tts import play_tts
 from giftconfig import gift,Giftdict1,Giftdict2
 
 
-roomid = '22616007'#22616007
+roomid = '22616007'
 hb = '00000010001000010000000200000001'
 data_raw='000000{headerLen}0010000100000007000000017b22726f6f6d6964223a{roomid}7d'
 data_raw=data_raw.format(headerLen=hex(27+len(roomid))[2:], roomid=roomid.encode().hex())
