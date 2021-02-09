@@ -30,18 +30,19 @@ lock=threading.Lock()
 gift().get_gift()
 
 async def sendHeartBeat(websocket):
+    '''心跳包'''
     while True:
         await asyncio.sleep(30)
         await websocket.send(bytes.fromhex(hb))
-#        print('心跳')
 
 async def receDM(websocket):
+    '''接收'''
     while True:
         recv_text = await websocket.receive()
         printDM(recv_text)
-#        print('接收')
 
 async def startup(url):
+    '''开始'''
     async with AioWebSocket(url) as aws:
         converse = aws.manipulator
         
@@ -50,15 +51,13 @@ async def startup(url):
         await asyncio.wait(tasks)
 
 def speak(gift):
-
-        speaker = win32com.client.Dispatch("SAPI.SpVoice")
-        speaker.Speak(gift)
-        #+name+action+num+'个'+giftName
+    '''语音播放'''    
+    speaker = win32com.client.Dispatch("SAPI.SpVoice")
+    speaker.Speak(gift)
         
 def pin_hudie(num):
-#    为什么全局这个变量？
-#    global unsec
-    lock.acquire()#上锁
+    '''启动机关1'''
+    lock.acquire()
     switch_obj = SerialSwitch(com_id)
     funlist = [switch_obj.switch_pin1_on, switch_obj.switch_pin2_on]
     #    随机启动
@@ -75,8 +74,9 @@ def pin_hudie(num):
     print('完毕')     
     switch_obj.close()
     lock.release()#开锁
-# 将数据包传入：
+
 def pin_touwei(num):
+    '''启动机关2'''
     lock.acquire()#上锁
     switch_obj = SerialSwitch(com_id)
     print('正在启动%s' % num+'秒'+name+'投喂的小零食')
@@ -86,7 +86,9 @@ def pin_touwei(num):
     print('完毕')     
     switch_obj.close()
     lock.release()#开锁
+
 def printDM(data):
+    '''数据包模块'''
     # 获取数据包的长度，版本和操作类型
     packetLen = int(data[:4].hex(),16)
     ver = int(data[6:8].hex(),16)
@@ -96,26 +98,23 @@ def printDM(data):
     if(len(data)>packetLen):
         printDM(data[packetLen:])
         data=data[:packetLen]
-        #print('data数据包：',data)
 
     # 有时会发送过来 zlib 压缩的数据包，这个时候要去解压。
     # if(ver == 2):
-     #    data = zlib.decompress(data)
+    #    data = zlib.decompress(data)
     #    printDM(data)
-     #    print('db3')
-     #    return
+    #    print('db3')
+    #    return
     
     if(ver==2):
         data = zlib.decompress(data[16:])
         printDM(data)
-        #print('zlib数据包：',data)
         return
     
     # ver 为1的时候为进入房间后或心跳包服务器的回应。op 为3的时候为房间的人气值。
     if(ver == 1):
         if(op == 3):
              pass
-#            print('[RENQI]  {}'.format(int(data[16:].hex(),16)))
         return
 
     # ver 不为2也不为1目前就只能是0了，也就是普通的 json 数据。
@@ -127,9 +126,7 @@ def printDM(data):
             if(jd['cmd']=='DANMU_MSG'):
                 Ttsplay=threading.Thread(target=play_tts,args=(jd['info'][1],))
                 Ttsplay.start()
-#                print('[DANMU] ', jd['info'][2][1], ': ', jd['info'][1])
                 if jd['info'][1]=='要讲武德':
-#                    print('ok')
                     name=jd['info'][2][1]
                     run_1=threading.Thread(target=pin_hudie,args=(10,))
                     run_1.start()
@@ -138,54 +135,21 @@ def printDM(data):
 #                    Ttsplay=threading.Thread(target=play_tts,args=(jd['info'][1],))
 #                    Ttsplay.start()
             elif(jd['cmd']=='SEND_GIFT'):
-#                wavpath1=('F:\dltool\code\录音-022.wav')
-#                wavpath2=('F:\dltool\code\录音-023.wav')
-#                wavplay(wavpath)
-#                global name
-#                action=jd['data']['action']
-#                global num
                 num=int(jd['data']['num'])
                 name=jd['data']['uname']
                 giftName=jd['data']['giftName']
                 print('感谢',jd['data']['uname'],jd['data']['action'],jd['data']['num'],'个', jd['data']['giftName'])
                 giftprice=Giftdict1.get(giftName)
                 gifttype=Giftdict2.get(giftName)
-#                if (giftName =='小心心' or giftName =='辣条' ):
                 if (gifttype =='silver'):
-#                    print('银瓜子')
-#                    转动礼物个数*30秒
                     run_1=threading.Thread(target=pin_hudie,args=(num*20,))
                     run_1.start()
                 else:
-#                    print('金瓜子')
-#                    print(num*giftprice/1000)
-#                    转动礼物个数*价格除以1000
                     run_1=threading.Thread(target=pin_touwei,args=(num*giftprice/500,))
                     run_1.start()
                     Ttsplay=threading.Thread(target=play_tts,args=('小熊小熊你又拉了吗，谢谢老板赏饭，小伙伴们快来开饭啦',))
                     Ttsplay.start()
-#                    停止线程
-#                    stop_thread.stop_thread(music1)
-#                    time.sleep(0.1)
-#                    switch_obj.close()
-#                播放两个音频
-#                music1=threading.Thread(target=wavplay,args=(wavpath1,))
-#                music2=threading.Thread(target=wavplay,args=(wavpath2,))
-#                music1.start()
-#                music2.start()
-#                
-#                thread_num = len(threading.enumerate())
-#                print("主线程：线程数量是%d" % thread_num)
-                
-                # 输出所有线程名字
-#                print(str(threading.enumerate()))
-#                print("主线程：主线程结束")
-            #elif(jd['cmd']=='LIVE'):
-              #  print('[Notice] LIVE Start!')
-            #elif(jd['cmd']=='PREPARING'):
-             #   print('[Notice] LIVE Ended!')
-            #else:
-               # print('[OTHER] ', jd['cmd'])
+
         except Exception as e:
             pass
         
@@ -197,5 +161,3 @@ if __name__ == '__main__':
         asyncio.get_event_loop().run_until_complete(startup(remote))
     except KeyboardInterrupt as exc:
         print('Quit.',exc)
-        
-
